@@ -9,7 +9,7 @@ public class AbstractBeanFactoryTest {
     public void getBean() {
         final DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
         factory.registerBeanDefinition("userService",new BeanDenition(UserService.class));
-        UserService userService = (UserService) factory.getBean("userService");
+        UserService userService = (UserService) factory.getBean("userService","userName");
         userService.queryUserInfo();
         System.out.println(userService.toString());
 
