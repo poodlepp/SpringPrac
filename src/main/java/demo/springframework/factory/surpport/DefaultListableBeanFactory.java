@@ -1,20 +1,18 @@
 package demo.springframework.factory.surpport;
 
 import demo.springframework.BeansException;
-import demo.springframework.factory.config.BeanDenition;
-import demo.springframework.factory.surpport.AbstractAutowireCapableBeanFactory;
-import demo.springframework.factory.surpport.BeanDefinitionRegistry;
+import demo.springframework.factory.config.BeanDefinition;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFactory implements BeanDefinitionRegistry {
 
-    private Map<String, BeanDenition> beanDenitionMap = new ConcurrentHashMap<>();
+    private Map<String, BeanDefinition> beanDefinitionMap = new ConcurrentHashMap<>();
 
     @Override
-    public BeanDenition getBeanDefinition(String name) {
-        final BeanDenition beanDenition = beanDenitionMap.get(name);
+    public BeanDefinition getBeanDefinition(String name) {
+        final BeanDefinition beanDenition = beanDefinitionMap.get(name);
         if(beanDenition == null){
             throw new BeansException("no expect beanDefinition");
         }
@@ -22,7 +20,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     }
 
     @Override
-    public void registerBeanDefinition(String name,BeanDenition beanDenition){
-        beanDenitionMap.put(name,beanDenition);
+    public void registerBeanDefinition(String name, BeanDefinition beanDenition){
+        beanDefinitionMap.put(name,beanDenition);
+    }
+
+    @Override
+    public boolean containsBeanDefinition(String beanName) {
+        return beanDefinitionMap.containsKey(beanName);
     }
 }

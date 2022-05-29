@@ -1,4 +1,4 @@
-package demo.springframework.factory.surpport;
+package demo.springframework.factory.surpport.demo;
 
 public class EnhancerDemo {
     /**

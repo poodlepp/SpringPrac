@@ -1,14 +1,12 @@
 package demo.springframework.factory.surpport;
 
 import cn.hutool.core.bean.BeanUtil;
-import demo.springframework.BeansException;
 import demo.springframework.beans.BeanReference;
 import demo.springframework.beans.PropertyValue;
 import demo.springframework.beans.PropertyValues;
-import demo.springframework.factory.config.BeanDenition;
+import demo.springframework.factory.config.BeanDefinition;
 
 import java.lang.reflect.Constructor;
-import java.util.function.Consumer;
 
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory{
     public InstantiationStrategy getInstantiationStrategy() {
@@ -22,7 +20,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     private InstantiationStrategy instantiationStrategy = new CglibSubclassingInstantiationStrategy();
 
     @Override
-    public Object createBean(String name, BeanDenition beanDenition,Object[] args) {
+    public Object createBean(String name, BeanDefinition beanDenition, Object[] args) {
         //            final Object bean = beanDenition.getClazz().newInstance();
         final Object bean = createBeanInstance(beanDenition,name,args);
         appPropertyValues(name,bean,beanDenition);
@@ -31,7 +29,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     }
 
-    private void appPropertyValues(String name, Object bean, BeanDenition beanDenition) {
+    private void appPropertyValues(String name, Object bean, BeanDefinition beanDenition) {
         final PropertyValues propertyValues = beanDenition.getPropertyValues();
         for (PropertyValue propertyValue : propertyValues.getPropertyValues()) {
             final String pname = propertyValue.getName();
@@ -44,7 +42,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
     }
 
-    private Object createBeanInstance(BeanDenition beanDenition, String name, Object[] args) {
+    private Object createBeanInstance(BeanDefinition beanDenition, String name, Object[] args) {
         Constructor constructor = null;
         final Class clazz = beanDenition.getClazz();
         final Constructor[] declaredConstructors = clazz.getDeclaredConstructors();

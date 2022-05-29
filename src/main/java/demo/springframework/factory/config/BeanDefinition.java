@@ -2,17 +2,17 @@ package demo.springframework.factory.config;
 
 import demo.springframework.beans.PropertyValues;
 
-public class BeanDenition {
+public class BeanDefinition {
     private Class clazz;
 
     private PropertyValues propertyValues;
 
-    public BeanDenition(Class clazz){
+    public BeanDefinition(Class clazz){
         this.clazz = clazz;
         this.propertyValues = new PropertyValues();
     }
 
-    public BeanDenition(Class clazz, PropertyValues propertyValues) {
+    public BeanDefinition(Class clazz, PropertyValues propertyValues) {
         this.clazz = clazz;
         this.propertyValues = propertyValues;
     }

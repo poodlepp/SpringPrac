@@ -3,7 +3,7 @@ package demo.springframework.factory.surpport;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UserDAO {
+public class UserDao {
     private static Map<String,String> map = new HashMap<>();
     static {
         map.put("01","xiaoyi");

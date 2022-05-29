@@ -1,14 +1,14 @@
 package demo.springframework.factory.surpport;
 
 import demo.springframework.BeansException;
-import demo.springframework.factory.config.BeanDenition;
+import demo.springframework.factory.config.BeanDefinition;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 public class SimpleInstantiationStrategy implements InstantiationStrategy {
     @Override
-    public Object instantiate(BeanDenition beanDenition, String beanName, Constructor constructor, Object[] args) throws BeansException {
+    public Object instantiate(BeanDefinition beanDenition, String beanName, Constructor constructor, Object[] args) throws BeansException {
         final Class clazz = beanDenition.getClazz();
 
         try {
