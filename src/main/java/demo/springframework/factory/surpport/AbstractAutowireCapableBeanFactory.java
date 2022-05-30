@@ -1,15 +1,19 @@
 package demo.springframework.factory.surpport;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import demo.springframework.BeansException;
 import demo.springframework.beans.BeanReference;
 import demo.springframework.beans.PropertyValue;
 import demo.springframework.beans.PropertyValues;
 import demo.springframework.factory.AutowireCapableBeanFactory;
+import demo.springframework.factory.DisposableBean;
+import demo.springframework.factory.InitializingBean;
 import demo.springframework.factory.config.BeanDefinition;
 import demo.springframework.factory.config.BeanPostProcessor;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory implements AutowireCapableBeanFactory {
 
@@ -18,22 +22,47 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     @Override
     public Object createBean(String name, BeanDefinition beanDenition, Object[] args) {
         //            final Object bean = beanDenition.getClazz().newInstance();
-        Object bean = createBeanInstance(beanDenition,name,args);
-        appPropertyValues(name,bean,beanDenition);
-        bean = initializeBean(name,bean,beanDenition);
+        Object bean = null;
+        try {
+            bean = createBeanInstance(beanDenition,name,args);
+            appPropertyValues(name,bean,beanDenition);
+            bean = initializeBean(name,bean,beanDenition);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BeansException("instantiation of bean fail",e);
+        }
+        registerDisposableBeanIfNecessary(name,bean,beanDenition);
         addSingleton(name,bean);
         return bean;
 
     }
 
-    private Object initializeBean(String name, Object bean, BeanDefinition beanDenition) {
+    protected void registerDisposableBeanIfNecessary(String name, Object bean, BeanDefinition beanDenition) {
+        if(bean instanceof DisposableBean || StrUtil.isNotEmpty(beanDenition.getDestroyMethodName())){
+            registerDisposableBean(name,new DisposableBeanAdapter(bean,name,beanDenition));
+        }
+    }
+
+    private Object initializeBean(String name, Object bean, BeanDefinition beanDenition) throws Exception {
         Object wrappedBean = applyBeanPostProcessorBeforeInitialization(bean, name);
         invokeinitMethods(name,wrappedBean,beanDenition);
         wrappedBean = applyBeanPostProcessorAfterInitialization(bean,name);
         return wrappedBean;
     }
 
-    private void invokeinitMethods(String name, Object wrappedBean, BeanDefinition beanDenition) {
+    private void invokeinitMethods(String name, Object bean, BeanDefinition beanDenition) throws Exception {
+        if(bean instanceof InitializingBean){
+            ((InitializingBean)bean).afterPropertiesSet();
+        }
+
+        final String initMethodName = beanDenition.getInitMethodName();
+        if(StrUtil.isNotEmpty(initMethodName)){
+            final Method method = beanDenition.getClazz().getMethod(initMethodName);
+            if(null == method){
+                throw new BeansException("could not find an init method");
+            }
+            method.invoke(bean);
+        }
     }
 
     private void appPropertyValues(String name, Object bean, BeanDefinition beanDenition) {

@@ -45,4 +45,17 @@ public class AbstractBeanFactoryTest {
     }
 
 
+    /**
+     * test initmethod destroymethod
+     */
+    @Test
+    public void test4(){
+        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        context.registerShutdownHook();
+        final UserService userService = context.getBean("userService", UserService.class);
+        final String result = userService.queryUserInfo();
+        System.out.println(result);
+
+    }
+
 }

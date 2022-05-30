@@ -13,4 +13,16 @@ public class UserDao {
     public String queryVal(String uid){
         return map.get(uid);
     }
+
+    public void initDataMethod(){
+        System.out.println("userdao 执行initmethod");
+        map.put("10001","小夫");
+        map.put("10002","八杯水");
+        map.put("10003","阿毛");
+    }
+
+    public void destroyDataMethod(){
+        System.out.println("userdao 执行destroy");
+        map.clear();
+    }
 }

@@ -1,6 +1,11 @@
 package demo.springframework.factory.surpport;
 
-public class UserService {
+import demo.springframework.factory.DisposableBean;
+import demo.springframework.factory.InitializingBean;
+import lombok.Data;
+
+@Data
+public class UserService implements InitializingBean, DisposableBean {
     private String uid;
     private String company;
     private String location;
@@ -15,35 +20,14 @@ public class UserService {
         return UserDao.queryVal(uid) +"++"+ company +"+++"+ location;
     }
 
-    public String getUid() {
-        return uid;
+
+    @Override
+    public void destroy() throws Exception {
+        System.out.println("userservice 执行destroy");
     }
 
-    public void setUid(String uid) {
-        this.uid = uid;
-    }
-
-    public UserDao getUserDao() {
-        return UserDao;
-    }
-
-    public void setUserDao(UserDao UserDao) {
-        this.UserDao = UserDao;
-    }
-
-    public String getCompany() {
-        return company;
-    }
-
-    public void setCompany(String company) {
-        this.company = company;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        System.out.println("userservice 执行initialization");
     }
 }
