@@ -3,6 +3,7 @@ package demo.springframework.factory.surpport;
 import demo.springframework.beans.BeanReference;
 import demo.springframework.beans.PropertyValue;
 import demo.springframework.beans.PropertyValues;
+import demo.springframework.context.support.ClassPathXmlApplicationContext;
 import demo.springframework.factory.config.BeanDefinition;
 import org.junit.Test;
 
@@ -34,4 +35,14 @@ public class AbstractBeanFactoryTest {
         UserService userService = defaultListableBeanFactory.getBean("userService", UserService.class);
         System.out.println(userService.queryUserInfo());
     }
+
+    @Test
+    public void test3(){
+        final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        final UserService userService = context.getBean("userService", UserService.class);
+        final String result = userService.queryUserInfo();
+        System.out.println(result);
+    }
+
+
 }

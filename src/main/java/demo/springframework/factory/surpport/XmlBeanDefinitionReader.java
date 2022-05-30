@@ -48,7 +48,13 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader{
     public void loadBeanDefinitions(String location) throws BeansException {
         final Resource resource = getResourceLoader().getResource(location);
         loadBeanDefinitions(resource);
+    }
 
+    @Override
+    public void loadBeanDefinitions(String... locations) throws BeansException {
+        for (String location : locations) {
+            loadBeanDefinitions(location);
+        }
     }
 
     private void doLoadBeanDefinitions(InputStream inputStream) throws ClassNotFoundException {

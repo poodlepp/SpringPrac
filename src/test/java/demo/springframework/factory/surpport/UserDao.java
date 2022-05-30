@@ -10,7 +10,7 @@ public class UserDao {
         map.put("02","xiaoer");
         map.put("03","xiaosan");
     }
-    public String queryVal(String key){
-        return map.get(key);
+    public String queryVal(String uid){
+        return map.get(uid);
     }
 }

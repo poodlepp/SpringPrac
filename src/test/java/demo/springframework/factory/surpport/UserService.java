@@ -1,26 +1,26 @@
 package demo.springframework.factory.surpport;
 
 public class UserService {
-    private String name;
+    private String uid;
+    private String company;
+    private String location;
     private UserDao UserDao;
     public UserService(){
         super();
     }
-    public UserService(String name){
-        this.name = name;
+    public UserService(String uid){
+        this.uid = uid;
     }
     public String queryUserInfo() {
-        final String s = UserDao.queryVal(name);
-        System.out.println("query result:" + s);
-        return s;
+        return UserDao.queryVal(uid) +"++"+ company +"+++"+ location;
     }
 
-    public String getName() {
-        return name;
+    public String getUid() {
+        return uid;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public UserDao getUserDao() {
@@ -29,5 +29,21 @@ public class UserService {
 
     public void setUserDao(UserDao UserDao) {
         this.UserDao = UserDao;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }
