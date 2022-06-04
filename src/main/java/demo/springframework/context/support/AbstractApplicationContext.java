@@ -15,6 +15,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
     public void refresh() throws BeansException {
         refreshBeanFactory();
         ConfigurableListableBeanFactory beanFactory = getBeanFactory();
+        beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
         invokeBeanFactoryPostProcessor(beanFactory);
         registerBeanPostProcessor(beanFactory);
         beanFactory.preInstantiateSingletons();

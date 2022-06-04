@@ -55,6 +55,8 @@ public class AbstractBeanFactoryTest {
         final UserService userService = context.getBean("userService", UserService.class);
         final String result = userService.queryUserInfo();
         System.out.println(result);
+        System.out.println("context:" + userService.getApplicationContext());
+        System.out.println("factory:" + userService.getBeanFactory());
 
     }
 

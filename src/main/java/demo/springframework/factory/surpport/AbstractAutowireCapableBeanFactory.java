@@ -6,6 +6,10 @@ import demo.springframework.BeansException;
 import demo.springframework.beans.BeanReference;
 import demo.springframework.beans.PropertyValue;
 import demo.springframework.beans.PropertyValues;
+import demo.springframework.beans.factory.Aware;
+import demo.springframework.beans.factory.BeanClassLoaderAware;
+import demo.springframework.beans.factory.BeanFactoryAware;
+import demo.springframework.beans.factory.BeanNameAware;
 import demo.springframework.factory.AutowireCapableBeanFactory;
 import demo.springframework.factory.DisposableBean;
 import demo.springframework.factory.InitializingBean;
@@ -44,6 +48,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     }
 
     private Object initializeBean(String name, Object bean, BeanDefinition beanDenition) throws Exception {
+        if(bean instanceof Aware){
+            if(bean instanceof BeanFactoryAware){
+                ((BeanFactoryAware)bean).setBeanFactory(this);
+            }
+            if(bean instanceof BeanClassLoaderAware){
+                ((BeanClassLoaderAware)bean).setBeanClassLoader(getBeanClassLoader());
+            }
+            if(bean instanceof BeanNameAware){
+                ((BeanNameAware)bean).setBeanName(name);
+            }
+        }
+
         Object wrappedBean = applyBeanPostProcessorBeforeInitialization(bean, name);
         invokeinitMethods(name,wrappedBean,beanDenition);
         wrappedBean = applyBeanPostProcessorAfterInitialization(bean,name);
