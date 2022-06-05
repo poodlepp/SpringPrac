@@ -1,5 +1,7 @@
 package demo.springframework.factory.surpport;
 
+import demo.springframework.beans.factory.FactoryBean;
+import demo.springframework.beans.factory.surpport.FactoryBeanRegistrySurpport;
 import demo.springframework.factory.ConfigurableBeanFactory;
 import demo.springframework.factory.config.BeanDefinition;
 import demo.springframework.factory.config.BeanPostProcessor;
@@ -8,18 +10,18 @@ import demo.springframework.util.ClassUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
+public abstract class AbstractBeanFactory extends FactoryBeanRegistrySurpport implements ConfigurableBeanFactory {
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
     private ClassLoader beanClassLoader = ClassUtils.getClassLoader();
 
     @Override
     public Object getBean(String name) {
-        return getObject(name, null);
+        return doGetBean(name,null);
     }
 
     @Override
     public Object getBean(String name,Object... args) {
-        return getObject(name, args);
+        return doGetBean(name,args);
     }
 
     public <T> T getBean(String name,Class<T> requiredType){
@@ -36,6 +38,32 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         Object bean = createBean(name,beanDenition, args);
         addSingleton(name,bean);
         return bean;
+    }
+
+    /**
+     * factorybean专用
+     */
+    protected <T> T doGetBean(final String name, Object[] args){
+        Object singleton = getSingleton(name);
+        if(singleton != null){
+            return (T)getObjectForBeanInstance(singleton,name);
+        }
+
+        BeanDefinition beanDefinition = getBeanDefinition(name);
+        Object bean = createBean(name, beanDefinition, args);
+        return (T)getObjectForBeanInstance(bean,name);
+    }
+
+    private Object getObjectForBeanInstance(Object bean, String name) {
+        if(!(bean instanceof FactoryBean)){
+            return bean;
+        }
+
+        Object object = getCachedObjectFromFactoryBean(name);
+        if(object == null){
+            object = getObjectFromFactoryBean((FactoryBean) bean, name);
+        }
+        return object;
     }
 
     protected abstract Object createBean(String name, BeanDefinition beanDenition, Object[] args);
