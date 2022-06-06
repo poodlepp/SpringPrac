@@ -36,7 +36,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySurpport im
 
         BeanDefinition beanDenition = getBeanDefinition(name);
         Object bean = createBean(name,beanDenition, args);
-        addSingleton(name,bean);
+        registerSingleton(name,bean);
         return bean;
     }
 

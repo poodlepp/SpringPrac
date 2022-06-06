@@ -37,7 +37,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
         registerDisposableBeanIfNecessary(name,bean,beanDenition);
         if(beanDenition.isSingleton()){
-            addSingleton(name,bean);
+            registerSingleton(name,bean);
         }
         return bean;
     }
@@ -119,6 +119,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         this.instantiationStrategy = instantiationStrategy;
     }
 
+    @Override
     public Object applyBeanPostProcessorBeforeInitialization(Object existingBean,String beanName) throws BeansException{
         Object result = existingBean;
         for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
@@ -128,6 +129,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         }
         return result;
     }
+
+    @Override
     public Object applyBeanPostProcessorAfterInitialization(Object existingBean,String beanName) throws BeansException {
          Object result = existingBean;
         for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
