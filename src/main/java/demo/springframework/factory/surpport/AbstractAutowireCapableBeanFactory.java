@@ -15,6 +15,7 @@ import demo.springframework.factory.DisposableBean;
 import demo.springframework.factory.InitializingBean;
 import demo.springframework.factory.config.BeanDefinition;
 import demo.springframework.factory.config.BeanPostProcessor;
+import demo.springframework.factory.config.InstantiationAwareBeanPostProcessor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -28,6 +29,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         //            final Object bean = beanDenition.getClazz().newInstance();
         Object bean = null;
         try {
+            bean = resolveBeforeInstantiation(name,beanDenition);
+            if(null != bean){
+                //???
+                return bean;
+            }
+
             bean = createBeanInstance(beanDenition,name,args);
             appPropertyValues(name,bean,beanDenition);
             bean = initializeBean(name,bean,beanDenition);
@@ -40,6 +47,38 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             registerSingleton(name,bean);
         }
         return bean;
+    }
+
+    /**
+     * 当前逻辑，只要走代理逻辑，就不能走正常初始化逻辑，不完美
+     * @param name
+     * @param beanDenition
+     * @return
+     */
+    private Object resolveBeforeInstantiation(String name, BeanDefinition beanDenition) {
+        Object bean = applyBeanPostProcessorBeforeinstantiation(beanDenition.getClazz(),name);
+        if(null != bean){
+            bean = applyBeanPostProcessorAfterInitialization(bean,name);
+        }
+        return bean;
+    }
+
+    /**
+     * 创建代理，但是现在有局限性，只能支持一层
+     * @param clazz
+     * @param name
+     * @return
+     */
+    private Object applyBeanPostProcessorBeforeinstantiation(Class clazz, String name) {
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            if(beanPostProcessor instanceof InstantiationAwareBeanPostProcessor){
+                Object result = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessBeforeInstantiation(clazz, name);
+                if(null != result) {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
 
     protected void registerDisposableBeanIfNecessary(String name, Object bean, BeanDefinition beanDenition) {

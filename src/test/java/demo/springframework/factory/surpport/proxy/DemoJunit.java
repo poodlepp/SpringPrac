@@ -5,6 +5,7 @@ import demo.springframework.aop.TargetSource;
 import demo.springframework.aop.aspectj.AspectJExpressionPointcut;
 import demo.springframework.aop.framework.Cglib2AopProxy;
 import demo.springframework.aop.framework.JdkDynamicAopProxy;
+import demo.springframework.context.support.ClassPathXmlApplicationContext;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -35,6 +36,15 @@ public class DemoJunit {
 
         IProxyService proxy_cglib = (IProxyService) new Cglib2AopProxy(advisedSupport).getProxy();
         System.out.println("cglib resutl:" + proxy_cglib.printSomething());
+
+    }
+
+
+    @Test
+    public void test3(){
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:proxyspring.xml");
+        IProxyService proxyService = applicationContext.getBean("proxyService", IProxyService.class);
+        System.out.println("测试结果：" + proxyService.printSomething());
 
     }
 }
