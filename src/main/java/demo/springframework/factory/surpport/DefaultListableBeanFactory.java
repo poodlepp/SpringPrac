@@ -4,8 +4,10 @@ import demo.springframework.BeansException;
 import demo.springframework.factory.ConfigurableListableBeanFactory;
 import demo.springframework.factory.config.BeanDefinition;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFactory implements BeanDefinitionRegistry, ConfigurableListableBeanFactory {
@@ -53,5 +55,23 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
     @Override
     public String[] getBeanDefinitionNames() {
         return beanDefinitionMap.keySet().toArray(new String[0]);
+    }
+
+    @Override
+    public <T> T getBean(Class<T> requiredType) {
+        Set<Map.Entry<String, BeanDefinition>> entries = beanDefinitionMap.entrySet();
+        ArrayList<String> beanNames = new ArrayList<>();
+        for (Map.Entry<String, BeanDefinition> entry : entries) {
+            if(requiredType.isAssignableFrom(entry.getValue().getClazz())){
+                beanNames.add(entry.getKey());
+            }
+        }
+        if(beanNames.size() == 0){
+            throw new BeansException("zero result found    wrong.");
+        }else if(beanNames.size() > 1){
+            throw new BeansException("multi result found    wrong.");
+        }else{
+            return getBean(beanNames.get(0),requiredType);
+        }
     }
 }

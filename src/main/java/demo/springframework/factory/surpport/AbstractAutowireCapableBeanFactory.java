@@ -26,27 +26,70 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     @Override
     public Object createBean(String name, BeanDefinition beanDenition, Object[] args) {
-        //            final Object bean = beanDenition.getClazz().newInstance();
         Object bean = null;
         try {
+            //创建代理对象，如果有返回需要后续流程直接执行afterInitialize
             bean = resolveBeforeInstantiation(name,beanDenition);
             if(null != bean){
-                //???
                 return bean;
             }
 
+            //实例化bean
             bean = createBeanInstance(beanDenition,name,args);
+            //某些实例不需要进行
+            boolean isContinue = applybeanPostProcessorsAfterInstantiation(name,bean);
+            if(!isContinue){
+                return bean;
+            }
+
+            //beanPostProcessor 修改属性值
+            applyBeanPostProcessorBeforeApplyingPropertyValues(name,bean,beanDenition);
+
+            //填充属性（目前的实现  property优先级高于@value）
             appPropertyValues(name,bean,beanDenition);
+
+            //执行初始化方法 以及beanPostProcessor 前置+后置方法
             bean = initializeBean(name,bean,beanDenition);
         } catch (Exception e) {
             e.printStackTrace();
             throw new BeansException("instantiation of bean fail",e);
         }
+        //注册disposableBeans
         registerDisposableBeanIfNecessary(name,bean,beanDenition);
+
+        //初始化单例对象
         if(beanDenition.isSingleton()){
             registerSingleton(name,bean);
         }
         return bean;
+    }
+
+    private void applyBeanPostProcessorBeforeApplyingPropertyValues(String name, Object bean, BeanDefinition beanDenition) {
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            if(beanPostProcessor instanceof InstantiationAwareBeanPostProcessor){
+                PropertyValues propertyValues = ((InstantiationAwareBeanPostProcessor) beanPostProcessor).postProcessPropertyValues(beanDenition.getPropertyValues(), bean, name);
+                if(null != propertyValues){
+                    for (PropertyValue propertyValue : propertyValues.getPropertyValues()) {
+                        beanDenition.getPropertyValues().addPropertyValue(propertyValue);
+                    }
+                }
+            }
+        }
+    }
+
+
+    private boolean applybeanPostProcessorsAfterInstantiation(String name, Object bean) {
+        boolean isContinue = true;
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            if(beanPostProcessor instanceof InstantiationAwareBeanPostProcessor){
+                InstantiationAwareBeanPostProcessor instantiationAware = (InstantiationAwareBeanPostProcessor) beanPostProcessor;
+                if(!instantiationAware.postProcessAfterInstantiation(bean, name)){
+                    isContinue = false;
+                    return isContinue;
+                }
+            }
+        }
+        return isContinue;
     }
 
     /**
