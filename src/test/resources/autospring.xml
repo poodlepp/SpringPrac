@@ -9,6 +9,15 @@
 <!--    <bean id="userService" class="demo.springframework.factory.surpport.autoimport.UserService" >-->
 <!--        <property name="token" value="${token}"/>-->
 <!--    </bean>-->
+    <bean class="demo.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
+    <bean id="beforeAdvice" class="demo.springframework.factory.surpport.proxy.ProxyServiceBeforeAdvice"/>
+    <bean id="methodInterceptor" class="demo.springframework.aop.framework.adapter.MethodBeforeAdviceInterceptor">
+        <property name="advice" ref="beforeAdvice"/>
+    </bean>
+    <bean id="pointcutAdvisor" class="demo.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor">
+        <property name="expression" value="execution(* demo.springframework.factory.surpport.autoimport.UserService.*(..))"/>
+        <property name="advice" ref="methodInterceptor"/>
+    </bean>
 
     <bean class="demo.springframework.beans.factory.PropertyPlaceholderConfigurer">
         <property name="location" value="classpath:spring.properties"/>

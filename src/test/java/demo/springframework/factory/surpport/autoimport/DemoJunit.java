@@ -10,7 +10,7 @@ public class DemoJunit {
     public void test2(){
         final ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:autospring.xml");
         context.registerShutdownHook();
-        final UserService userService = context.getBean("userService", UserService.class);
+        final IUserservice userService = context.getBean("userService", IUserservice.class);
         String s = userService.queryUserInfo("uuuuu");
         System.out.println("test query result: " + s);
 

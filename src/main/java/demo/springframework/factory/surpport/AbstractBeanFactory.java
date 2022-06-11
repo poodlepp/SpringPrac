@@ -28,6 +28,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySurpport im
         return doGetBean(name,args);
     }
 
+    @Override
     public <T> T getBean(String name,Class<T> requiredType){
         return (T)getBean(name);
     }

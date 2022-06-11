@@ -30,35 +30,31 @@ public class DefaultAdvisorAutoProxyCreator implements InstantiationAwareBeanPos
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if(isInfrastructureClass(bean.getClass())){
+            return bean;
+        }
+
+        Collection<AspectJExpressionPointcutAdvisor> advisors = beanFactory.getBeansOfType(AspectJExpressionPointcutAdvisor.class).values();
+        for (AspectJExpressionPointcutAdvisor advisor : advisors) {
+            ClassFilter classFilter = advisor.getPointcut().getClassFilter();
+            if(!classFilter.matches(bean.getClass())){
+                continue;
+            }
+
+            AdvisedSupport advisedSupport = new AdvisedSupport();
+            advisedSupport.setTargetSource(new TargetSource(bean));
+            advisedSupport.setMethodInterceptor((MethodInterceptor) advisor.getAdvice());
+            advisedSupport.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
+            //TODO 这里不太明白为何写死了false， 只能走jdk代理，必须实现接口
+            advisedSupport.setProxyTargetClass(false);
+            //创建代理对象
+            return new ProxyFactory(advisedSupport).getProxy();
+        }
         return bean;
     }
 
     @Override
     public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
-        if(isInfrastructureClass(beanClass)){
-            return null;
-        }
-        Collection<AspectJExpressionPointcutAdvisor> advisors = beanFactory.getBeansOfType(AspectJExpressionPointcutAdvisor.class).values();
-        for (AspectJExpressionPointcutAdvisor advisor : advisors) {
-            ClassFilter classFilter = advisor.getPointcut().getClassFilter();
-            if(!classFilter.matches(beanClass)){
-                continue;
-            }
-            AdvisedSupport advisedSupport = new AdvisedSupport();
-            TargetSource targetSource = null;
-            try {
-                targetSource = new TargetSource(beanClass.getDeclaredConstructor().newInstance());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            advisedSupport.setTargetSource(targetSource);
-            advisedSupport.setMethodInterceptor((MethodInterceptor) advisor.getAdvice());
-            advisedSupport.setMethodMatcher(advisor.getPointcut().getMethodMatcher());
-            advisedSupport.setProxyTargetClass(false);
-            Object proxy = new ProxyFactory(advisedSupport).getProxy();
-            return proxy;
-        }
-
         return null;
     }
 

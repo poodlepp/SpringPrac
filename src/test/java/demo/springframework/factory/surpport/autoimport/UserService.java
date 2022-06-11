@@ -7,7 +7,7 @@ import lombok.Data;
 
 @Data
 @Component("userService")
-public class UserService {
+public class UserService implements IUserservice{
     @Value("${token}")
     private String token;
     @Autowired
