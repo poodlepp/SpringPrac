@@ -22,20 +22,30 @@ import java.lang.reflect.Method;
 
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory implements AutowireCapableBeanFactory {
 
-    private InstantiationStrategy instantiationStrategy = new CglibSubclassingInstantiationStrategy();
+    /**
+     * 目前发现如果cglib逻辑叠加 cglib+cglib invocationException => null
+     */
+    private InstantiationStrategy instantiationStrategy = new SimpleInstantiationStrategy();
 
     @Override
     public Object createBean(String name, BeanDefinition beanDenition, Object[] args) {
+        Object bean = resolveBeforeInstantiation(name,beanDenition);
+        if(null != bean){
+            return bean;
+        }
+        return doCreateBean(name,beanDenition,args);
+    }
+
+    private Object doCreateBean(String name, BeanDefinition beanDenition, Object[] args) {
         Object bean = null;
         try {
-            //创建代理对象，如果有返回需要后续流程直接执行afterInitialize
-            bean = resolveBeforeInstantiation(name,beanDenition);
-            if(null != bean){
-                return bean;
-            }
-
             //实例化bean
             bean = createBeanInstance(beanDenition,name,args);
+            if(beanDenition.isSingleton()){
+                Object finalBean = bean;
+                addSingletonFactory(name,() -> getEarlyBeanReference(name,beanDenition,finalBean));
+            }
+
             //某些实例不需要进行
             boolean isContinue = applybeanPostProcessorsAfterInstantiation(name,bean);
             if(!isContinue){
@@ -58,10 +68,25 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         registerDisposableBeanIfNecessary(name,bean,beanDenition);
 
         //初始化单例对象
+        Object exposedObject = bean;
         if(beanDenition.isSingleton()){
-            registerSingleton(name,bean);
+            exposedObject = getSingleton(name);
+            registerSingleton(name,exposedObject);
         }
         return bean;
+    }
+
+    private Object getEarlyBeanReference(String name, BeanDefinition beanDenition, Object bean) {
+        Object exposedObject = bean;
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            if(beanPostProcessor instanceof InstantiationAwareBeanPostProcessor){
+                exposedObject = ((InstantiationAwareBeanPostProcessor)beanPostProcessor).getEarlyBeanReference(exposedObject,name);
+                if(null == exposedObject){
+                    return exposedObject;
+                }
+            }
+        }
+        return exposedObject;
     }
 
     private void applyBeanPostProcessorBeforeApplyingPropertyValues(String name, Object bean, BeanDefinition beanDenition) {
