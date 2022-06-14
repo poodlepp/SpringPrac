@@ -2,6 +2,7 @@ package demo.springframework.factory.surpport;
 
 import demo.springframework.beans.factory.FactoryBean;
 import demo.springframework.beans.factory.surpport.FactoryBeanRegistrySurpport;
+import demo.springframework.core.convert.ConversionService;
 import demo.springframework.factory.ConfigurableBeanFactory;
 import demo.springframework.factory.config.BeanDefinition;
 import demo.springframework.factory.config.BeanPostProcessor;
@@ -17,6 +18,8 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySurpport im
     private ClassLoader beanClassLoader = ClassUtils.getClassLoader();
 
     private final List<StringValueResolver> embeddedValueResolvers = new ArrayList<>();
+
+    private ConversionService conversionService;
 
     @Override
     public Object getBean(String name) {
@@ -102,4 +105,21 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySurpport im
         }
         return result;
     }
+
+    @Override
+    public void setConversionService(ConversionService conversionService){
+        this.conversionService = conversionService;
+    }
+
+    @Override
+    public ConversionService getConversionService(){
+        return conversionService;
+    }
+
+    @Override
+    public boolean containsBean(String name){
+        return containsBeanDefinition(name);
+    }
+
+    protected abstract boolean containsBeanDefinition(String name);
 }

@@ -2,6 +2,7 @@ package demo.springframework.factory.surpport;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.TypeUtil;
 import demo.springframework.BeansException;
 import demo.springframework.beans.BeanReference;
 import demo.springframework.beans.PropertyValue;
@@ -10,6 +11,7 @@ import demo.springframework.beans.factory.Aware;
 import demo.springframework.beans.factory.BeanClassLoaderAware;
 import demo.springframework.beans.factory.BeanFactoryAware;
 import demo.springframework.beans.factory.BeanNameAware;
+import demo.springframework.core.convert.ConversionService;
 import demo.springframework.factory.AutowireCapableBeanFactory;
 import demo.springframework.factory.DisposableBean;
 import demo.springframework.factory.InitializingBean;
@@ -19,6 +21,7 @@ import demo.springframework.factory.config.InstantiationAwareBeanPostProcessor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFactory implements AutowireCapableBeanFactory {
 
@@ -200,10 +203,21 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             if(pvalue instanceof BeanReference){
                 BeanReference beanReference = (BeanReference) pvalue;
                 pvalue = getBean(beanReference.getName());
+            }else{
+                //todo  value 不都是string么
+                Class<?> sourceType = pvalue.getClass();
+                Class<?> targetType = (Class<?>) TypeUtil.getFieldType(bean.getClass(), pname);
+                ConversionService conversionService = getConversionService();//from ConfigurableBeanFactory
+                if(conversionService != null){
+                    if(conversionService.canConverter(sourceType,targetType)){
+                        pvalue = conversionService.converter(pvalue,targetType);
+                    }
+                }
             }
             BeanUtil.setFieldValue(bean,pname,pvalue);
         }
     }
+
 
     private Object createBeanInstance(BeanDefinition beanDenition, String name, Object[] args) {
         Constructor constructor = null;

@@ -5,6 +5,7 @@ import demo.springframework.context.ApplicationEvent;
 import demo.springframework.context.ApplicationListener;
 import demo.springframework.context.ConfigurableApplicationContext;
 import demo.springframework.context.event.*;
+import demo.springframework.core.convert.ConversionService;
 import demo.springframework.core.io.DefaultResourceLoader;
 import demo.springframework.factory.ConfigurableListableBeanFactory;
 import demo.springframework.factory.config.BeanFactoryPostProcessor;
@@ -30,10 +31,23 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
         // 注册事件监听器
         registerListeners();
 
-        beanFactory.preInstantiateSingletons();
+        //预处理
+        finishBeanFactoryInitialization(beanFactory);
         // 发布容器刷新完成事件
         finishRefresh();
 
+    }
+
+    private void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
+        //设置类型转换器
+        if(beanFactory.containsBean("conversionService")){
+            Object conversionService = beanFactory.getBean("conversionService");
+            if(conversionService instanceof ConversionService){
+                beanFactory.setConversionService((ConversionService) conversionService);
+            }
+        }
+        //提前实例化
+        beanFactory.preInstantiateSingletons();
     }
 
     private void finishRefresh() {
@@ -115,5 +129,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
     public void close(){
         publishEvent(new ContextClosedEvent(this));
         getBeanFactory().destroySingletons();
+    }
+
+    @Override
+    public boolean containsBean(String name){
+        return getBeanFactory().containsBean(name);
     }
 }
